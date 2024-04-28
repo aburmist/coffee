@@ -13,3 +13,7 @@ venv/
 
 # steamlit
 .streamlit/secrets.toml
+
+# Mac
+.DS_Store
+
