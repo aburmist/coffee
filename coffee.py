@@ -12,7 +12,6 @@ def submit():
         usecols=['coffee_weight', 'coffee_grind', 'water_weight', 'water_temperature', 'brew_time', 'brew_method', 'rating', 'comment', 'date']
     )
     df = df.dropna(how='all')
-    print(df, "1")
 
     # Get the current date and time
     current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
