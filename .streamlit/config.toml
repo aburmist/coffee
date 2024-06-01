@@ -1,4 +1,6 @@
 [theme]
 base="light"
 primaryColor="#8a624a"
-font="monospace"
+
+[browser]
+gatherUsageStats = false

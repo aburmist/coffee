@@ -8,6 +8,13 @@ It is built and deployed using the Streamlit and can easily be extended or chang
 ## How to run
 
 ```
+git clone git@github.com:aburmist/coffee.git
+cd coffee
+
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
 streamlit run coffee.py
 ```
 
