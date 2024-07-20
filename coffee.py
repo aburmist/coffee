@@ -73,9 +73,9 @@ def main():
             brew_method = st.selectbox('Brew method', ['Espresso', 'Aeropress', 'Pour Over', 'Clever', 'French Press', 'Moka', 'Drip'])
             water_temperature = st.selectbox('Temperature', ['175 Green', '185 White', '190 Oolong', '200 FrenchPress', 'Boil'])
         with col2:
-            coffee_weight = st.number_input('Coffee weight (g)', step=0.1)
-            coffee_grind = st.number_input('Grind size', max_value=40, min_value=0, step=1)
-        captured = st.form_submit_button('Submit')
+            coffee_weight = st.number_input('Coffee weight (g)')
+            coffee_grind = st.number_input('Grind size', max_value=40, placeholder='1-40')
+        captured = st.form_submit_button('Get Brew Ratio')
 
     if captured:
         ratio, brew_weight = calc_brew_ratio(brew_method, coffee_weight)
@@ -104,7 +104,7 @@ def main():
             - Method: `{brew_method}`
             - Comment: `{comment}`
             ''')
-        st.balloons()
+        # st.balloons()
     else:
         st.write('☝️ Record coffee!')
 
