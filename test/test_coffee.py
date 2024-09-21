@@ -33,18 +33,19 @@ class TestCoffeeFunctions(unittest.TestCase):
         self.assertEqual(ratio, 'N/A')
         self.assertEqual(brew_weight, 0)
 
-    # def test_extract_coffee_details(self):
-    #     # Test extract_coffee_details function with valid inputs
-    #     text = "Espresso, size 4, 20g coffee, 175 Green, 60s, 30g, 3 stars, Test comment from LLM"
-    #     coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment = extract_coffee_details(text)
-    #     self.assertEqual(coffee_grind, 10)
-    #     self.assertEqual(brew_method, 'Espresso')
-    #     self.assertEqual(coffee_weight, 20)
-    #     self.assertEqual(water_temperature, '175 Green')
-    #     self.assertEqual(brew_time, 60)
-    #     self.assertEqual(water_weight, 30)
-    #     self.assertEqual(rating, '⭐️⭐️⭐️')
-    #     self.assertEqual(comment, 'Test comment from LLM')
+    def test_extract_coffee_details(self):
+        # Test extract_coffee_details function with valid inputs
+        text = "Espresso, size 10, 20g, 175 Green, 60s, 30g, 3 stars, Test comment 3"
+        coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment = extract_coffee_details(text)
+        # validates the input (not the spreadsheet)
+        self.assertEqual(coffee_grind, 10)
+        self.assertEqual(brew_method, 'Espresso')
+        self.assertEqual(coffee_weight, 20)
+        self.assertEqual(water_temperature, '175 Green')
+        self.assertEqual(brew_time, 60)
+        self.assertEqual(water_weight, 30)
+        self.assertEqual(rating, '⭐️⭐️⭐️')
+        self.assertEqual(comment, 'Test comment 3')
 
 if __name__ == '__main__':
     unittest.main()
