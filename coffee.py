@@ -115,6 +115,7 @@ def extract_coffee_details(text):
 def description_page():
     st.title('Coffee Taster ☕')
     st.subheader('**Record your coffee using free text**')
+    # TODO: remove this after testing
     st.write("Pour over, boil, 18g, 4 size, 60sec, 60g, 4 stars, great coffee!")
 
     if 'submitted' not in st.session_state:
