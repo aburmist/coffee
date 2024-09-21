@@ -71,7 +71,7 @@ def calc_brew_ratio(brew_method, coffee_weight):
 
 def extract_coffee_details(text):
     # Set up OpenAI API key
-    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+    # os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
     model = ChatOpenAI(model="gpt-4o-mini")
 
     prompt = PromptTemplate.from_template(
@@ -112,11 +112,26 @@ def extract_coffee_details(text):
     
     return coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment
 
-def description_page():
+def coffee_page():
     st.title('Coffee Taster ☕')
     st.subheader('**Record your coffee using free text**')
     # TODO: remove this after testing
-    st.write("Pour over, boil, 18g, 4 size, 60sec, 60g, 4 stars, great coffee!")
+    st.write("Example: Pour over, boil, 18g, 4 size, 60sec, 60g, 4 stars, great coffee!")
+
+    # Request OPENAI_API_KEY from the user
+    with st.sidebar:
+        st.header("API Key Configuration")
+        if 'OPENAI_API_KEY' not in st.session_state:
+            st.session_state.OPENAI_API_KEY = None
+
+        if st.session_state.OPENAI_API_KEY is None:
+            api_key = st.text_input("Please enter your OPENAI_API_KEY", type="password")
+            if api_key:
+                st.session_state.OPENAI_API_KEY = api_key
+                st.experimental_rerun()
+
+    if st.session_state.OPENAI_API_KEY:
+        os.environ['OPENAI_API_KEY'] = st.session_state.OPENAI_API_KEY
 
     if 'submitted' not in st.session_state:
         st.session_state.submitted = False
@@ -124,7 +139,7 @@ def description_page():
     if not st.session_state.submitted:
         with st.form(key='input_form'):
             coffee_description = st.text_area("Describe your coffee notes", placeholder="E.g., espresso, pour over, etc...")
-            submitted = st.form_submit_button('Review')
+            submitted = st.form_submit_button('Submit')
 
         if submitted and coffee_description:
             coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment = extract_coffee_details(coffee_description)
@@ -137,7 +152,7 @@ def description_page():
             st.session_state.rating = rating
             st.session_state.comment = comment
             st.session_state.submitted = True
-            st.experimental_rerun()
+            st.rerun()
 
     if st.session_state.submitted:
         st.write("Please review and edit the extracted details:")
@@ -174,7 +189,7 @@ def description_page():
                 st.session_state.submitted = False
 
 def main():
-    description_page()
+    coffee_page()
 
 if __name__ == '__main__':
     main()
