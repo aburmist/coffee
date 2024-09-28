@@ -1,9 +1,11 @@
 # Coffee Taster ☕
 
 ## Description
-Coffee Taster provides a simple way to collect and save coffee tasting data for further analysis. 
+Coffee Taster provides a simple way to collect and save coffee tasting notes for further analysis. 
 
 It is built and deployed using the Streamlit and can easily be extended or changed. 
+
+Data is saved in the personal Google Sheets. 
 
 ## How to run
 
@@ -20,6 +22,7 @@ streamlit run coffee.py
 
 ## References
 * Follow the tutorial to set up private Google Sheet [Link](https://docs.streamlit.io/develop/tutorials/databases/private-gsheet)
+* Use your OpenAI API Key 
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

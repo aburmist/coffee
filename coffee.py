@@ -71,17 +71,17 @@ def extract_coffee_details(text):
 
     prompt = PromptTemplate.from_template(
         "Extract the following details from this text about coffee brewing:\n"
-        "1. Coffee grind size (must be an integer between 1 and 40)\n"
-        "2. Brew method (must be exactly one of: Espresso, Aeropress, Pour Over, Clever, French Press, Moka, Drip)\n"
-        "3. Coffee weight in grams (must be a positive integer)\n"
-        "4. Water temperature (must be exactly one of: 175 Green, 185 White, 190 Oolong, 200 FrenchPress, Boil)\n"
-        "5. Brew time in seconds (must be a positive integer)\n"
-        "6. Water weight in grams (must be a positive integer)\n"
-        "7. Rating (must be exactly one of: ⭐️, ⭐️⭐️, ⭐️⭐️⭐️, ⭐️⭐️⭐️⭐️, ⭐️⭐️⭐️⭐️⭐️)\n"
-        "8. Comment (any text)\n\n"
+        "1. Coffee grind size \n"
+        "2. Brew method \n"
+        "3. Coffee weight in grams \n"
+        "4. Water temperature \n"
+        "5. Brew time in seconds \n"
+        "6. Water weight in grams \n"
+        "7. Rating \n"
+        "8. Comment \n\n"
         "Text: {text}\n\n"
         "Provide the answer in this exact format, ensuring all values strictly adhere to the specified options:\n"
-        "Coffee grind: [integer between 1-40]\n"
+        "Coffee grind size: [integer between 1-40]\n"
         "Brew method: [Espresso|Aeropress|Pour Over|Clever|French Press|Moka|Drip]\n"
         "Coffee weight: [positive integer]\n"
         "Water temperature: [175 Green|185 White|190 Oolong|200 FrenchPress|Boil]\n"
@@ -107,7 +107,6 @@ def extract_coffee_details(text):
 
 def coffee_page():
     st.title('Coffee Taster ☕')
-    # TODO: remove this after testing
     st.write("Example: Pour over, boil, 18g, size 4, 50sec, 60g, 4 stars, great coffee!")
 
     # Request OPENAI_API_KEY from the user
@@ -172,7 +171,7 @@ def coffee_page():
                     - Time (s): `{brew_time}`
                     - Temperature: `{water_temperature}`
                     - Rating: `{rating}`
-                    - Grind: `{coffee_grind}`
+                    - Grind Size: `{coffee_grind}`
                     - Method: `{brew_method}`
                     - Comment: `{comment}`
                     ''')
