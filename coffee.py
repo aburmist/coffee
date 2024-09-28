@@ -107,9 +107,8 @@ def extract_coffee_details(text):
 
 def coffee_page():
     st.title('Coffee Taster ☕')
-    st.subheader('**Record your coffee tasting notes below**')
     # TODO: remove this after testing
-    st.write("Example: Pour over, boil, 18g, 4 size, 60sec, 60g, 4 stars, great coffee!")
+    st.write("Example: Pour over, boil, 18g, size 4, 50sec, 60g, 4 stars, great coffee!")
 
     # Request OPENAI_API_KEY from the user
     with st.sidebar:
@@ -121,21 +120,19 @@ def coffee_page():
             api_key = st.text_input("Please enter your OPENAI_API_KEY", type="password")
             if api_key:
                 st.session_state.OPENAI_API_KEY = api_key
-                st.experimental_rerun()
 
     if st.session_state.OPENAI_API_KEY:
         os.environ['OPENAI_API_KEY'] = st.session_state.OPENAI_API_KEY
-
     if 'submitted' not in st.session_state:
         st.session_state.submitted = False
 
     if not st.session_state.submitted:
         with st.form(key='input_form'):
-            coffee_description = st.text_area("Describe your coffee notes", placeholder="E.g., espresso, pour over, etc...")
-            submitted = st.form_submit_button('Submit')
+            coffee_notes = st.text_area("Describe your coffee notes", placeholder="E.g., espresso, pour over, etc...")
+            submitted = st.form_submit_button('Translate')
 
-        if submitted and coffee_description:
-            coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment = extract_coffee_details(coffee_description)
+        if submitted and coffee_notes:
+            coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment = extract_coffee_details(coffee_notes)
             st.session_state.coffee_grind = coffee_grind
             st.session_state.brew_method = brew_method
             st.session_state.coffee_weight = coffee_weight
@@ -145,7 +142,6 @@ def coffee_page():
             st.session_state.rating = rating
             st.session_state.comment = comment
             st.session_state.submitted = True
-            st.rerun()
 
     if st.session_state.submitted:
         st.write("Please review and edit the extracted details:")
@@ -163,12 +159,7 @@ def coffee_page():
                 rating = st.selectbox('Rating', ['⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️'], index=['⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️'].index(st.session_state.rating))
                 comment = st.text_input("Comment", value=st.session_state.comment)
             
-            col1, col2 = st.columns(2)
-            with col1:
-                final_submitted = st.form_submit_button('Submit')
-
-            with col2:
-                reset_button = st.form_submit_button('Reset')
+            final_submitted = st.form_submit_button('Submit')
             
             if final_submitted:
                 ratio, brew_weight = calc_brew_ratio(brew_method, coffee_weight)
@@ -186,10 +177,9 @@ def coffee_page():
                     - Comment: `{comment}`
                     ''')
                 st.session_state.submitted = False
-        
-            if reset_button:
-                st.session_state.submitted = False
-                st.experimental_rerun()
+                reset_button = st.form_submit_button('Start Over')
+                if reset_button:
+                    st.session_state.submitted = False
 
 def main():
     coffee_page()
