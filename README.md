@@ -1,11 +1,11 @@
 # Coffee Taster ☕
 
 ## Description
-Coffee Taster provides a simple way to collect and save coffee tasting notes for further analysis. 
+Coffee Taster application is the exploration of leveraging LLM to collect all the data from the user for the form submission instead of asking the user to fill out the form input fields themselves. 
 
 It is built and deployed using the Streamlit and can easily be extended or changed. 
 
-Data is saved in the personal Google Sheets. 
+Data is saved in the personal Google Sheets. To setup up your own, please clone the repo and go through the tutorial below.  
 
 ## How to run
 
