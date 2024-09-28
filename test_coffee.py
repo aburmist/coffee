@@ -1,6 +1,6 @@
 import unittest
 from coffee import (
-    submit,
+    submit_record,
     calc_brew_ratio,
     extract_coffee_details
 )
@@ -16,8 +16,8 @@ class TestCoffeeFunctions(unittest.TestCase):
         water_temperature = '175 Green'
         brew_time = 60
         rating = '⭐️⭐️⭐️'
-        comment = 'test_submit'
-        submit(coffee_grind, brew_method, coffee_weight, water_weight, water_temperature, brew_time, rating, comment)
+        comment = 'test_submit_record'
+        submit_record(coffee_grind, brew_method, coffee_weight, water_weight, water_temperature, brew_time, rating, comment)
         # Add assertions to verify data submission
         self.assertEqual(coffee_grind, 10)
         self.assertEqual(brew_method, 'Espresso')
@@ -26,7 +26,7 @@ class TestCoffeeFunctions(unittest.TestCase):
         self.assertEqual(brew_time, 60)
         self.assertEqual(water_weight, 30)
         self.assertEqual(rating, '⭐️⭐️⭐️')
-        self.assertEqual(comment, 'test_submit')
+        self.assertEqual(comment, 'test_submit_record')
 
     def test_calc_brew_ratio(self):
         # Test calc_brew_ratio function with valid inputs

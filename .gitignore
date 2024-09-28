@@ -16,6 +16,3 @@ venv/
 
 # Mac
 .DS_Store
-
-test.py
-audio.wav

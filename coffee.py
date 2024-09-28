@@ -11,19 +11,16 @@ from langchain_core.output_parsers import StrOutputParser
 
 st.set_page_config(page_title="Coffee Taster ☕", page_icon="☕", layout="wide")
 
-# Create a connection object
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-def submit(coffee_grind, brew_method, coffee_weight, water_weight, water_temperature, brew_time, rating, comment):
+def submit_record(coffee_grind, brew_method, coffee_weight, water_weight, water_temperature, brew_time, rating, comment):
+    """
+    """
+    conn = st.connection("gsheets", type=GSheetsConnection)
     df = conn.read(
         ttl=0,
         usecols=['coffee_weight', 'coffee_grind', 'water_weight', 'water_temperature', 'brew_time', 'brew_method', 'rating', 'comment', 'date']
     )
     df = df.dropna(how='all')
-
-    # Define variables
     current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     new_record = {
         "coffee_weight": [coffee_weight],
         "coffee_grind": [coffee_grind],
@@ -41,7 +38,6 @@ def submit(coffee_grind, brew_method, coffee_weight, water_weight, water_tempera
         data=df
     )
 
-# TODO: convert it to the tool 
 def calc_brew_ratio(brew_method, coffee_weight):
     """
     """
@@ -71,7 +67,6 @@ def calc_brew_ratio(brew_method, coffee_weight):
 
 def extract_coffee_details(text):
     # Set up OpenAI API key
-    # os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
     model = ChatOpenAI(model="gpt-4o-mini")
 
     prompt = PromptTemplate.from_template(
@@ -98,8 +93,6 @@ def extract_coffee_details(text):
     chain = prompt | model | StrOutputParser()
     result = chain.invoke({"text": text})
     
-    # Parse the result
-    # TODO: handle the cases when LLM doesn't return anything for all the inputs 
     lines = result.strip().split('\n')
     coffee_grind = int(lines[0].split(': ')[1]) if lines[0].split(': ')[1].isdigit() else 1
     brew_method = lines[1].split(': ')[1].strip()  # Add .strip() to remove any leading/trailing whitespace
@@ -114,7 +107,7 @@ def extract_coffee_details(text):
 
 def coffee_page():
     st.title('Coffee Taster ☕')
-    st.subheader('**Record your coffee using free text**')
+    st.subheader('**Record your coffee tasting notes below**')
     # TODO: remove this after testing
     st.write("Example: Pour over, boil, 18g, 4 size, 60sec, 60g, 4 stars, great coffee!")
 
@@ -169,12 +162,18 @@ def coffee_page():
             with col3:
                 rating = st.selectbox('Rating', ['⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️'], index=['⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️'].index(st.session_state.rating))
                 comment = st.text_input("Comment", value=st.session_state.comment)
-            final_submitted = st.form_submit_button('Submit')
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                final_submitted = st.form_submit_button('Submit')
+
+            with col2:
+                reset_button = st.form_submit_button('Reset')
             
             if final_submitted:
                 ratio, brew_weight = calc_brew_ratio(brew_method, coffee_weight)
                 st.write(f'Ideal Brew Ratio for {brew_method} is {ratio} and should weigh {int(brew_weight)} grams.')
-                submit(coffee_grind, brew_method, coffee_weight, water_weight, water_temperature, brew_time, rating, comment)
+                submit_record(coffee_grind, brew_method, coffee_weight, water_weight, water_temperature, brew_time, rating, comment)
                 st.markdown(f'''
                     ☕ You have tasted a coffee with the following characteristics:
                     - Weight (g): `{coffee_weight}`
@@ -187,6 +186,10 @@ def coffee_page():
                     - Comment: `{comment}`
                     ''')
                 st.session_state.submitted = False
+        
+            if reset_button:
+                st.session_state.submitted = False
+                st.experimental_rerun()
 
 def main():
     coffee_page()
