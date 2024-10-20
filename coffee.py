@@ -106,6 +106,7 @@ def extract_coffee_details(text):
     return coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment
 
 def coffee_page():
+    st.image('coffee_tasting_logo.png', width=200)
     st.title('Coffee Taster ☕')
     st.write("Example: Pour over, boil, 18g, size 4, 50sec, 60g, 4 stars, great coffee!")
 
@@ -128,7 +129,7 @@ def coffee_page():
     if not st.session_state.submitted:
         with st.form(key='input_form'):
             coffee_notes = st.text_area("Describe your coffee notes", placeholder="E.g., espresso, pour over, etc...")
-            submitted = st.form_submit_button('Translate')
+            submitted = st.form_submit_button('Submit')
 
         if submitted and coffee_notes:
             coffee_grind, brew_method, coffee_weight, water_temperature, brew_time, water_weight, rating, comment = extract_coffee_details(coffee_notes)
