@@ -1,0 +1,3 @@
+id,date,bean_id,bean_name,method,grinder,grind_setting,dose_g,water_g,yield_g,temp_c,time_s,rating,extraction,acidity,sweetness,body,bitterness,aftertaste,flavors,comment,original_text
+,2024-09-15 08:30:00,,Ethiopia Guji,Pour Over,,22,18,300,,94,190,4,balanced,,,,,,blueberry;floral,Sweet and juicy,
+,2024-09-16 07:45:00,,,Espresso,,10,18,,36,93,28,3.5,sour,,,,,,,A bit sour - grind finer,

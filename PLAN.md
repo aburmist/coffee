@@ -5,8 +5,9 @@ you brewed and how it tasted, in your own words. The app turns that into a struc
 record, links it to the bag of beans, tells you what to change next time, and keeps
 your history synced as a file you own.
 
-It is a native SwiftUI app for iPhone. It replaces the original Streamlit web app,
-which stays in git history (last commit before removal: `4ef98e1`).
+It is a native SwiftUI app for iPhone, in its **own new repository**. The Streamlit
+web app stays where it is (this repo, deployed on Streamlit Community Cloud) and is
+not changed.
 
 Status: **draft for review**. Nothing below is built yet.
 
@@ -35,7 +36,7 @@ Status: **draft for review**. Nothing below is built yet.
 | Storage | SwiftData (on the phone) |
 | Text → structured brew | **Foundation Models** (Apple's on-device model) with guided generation (`@Generable`) |
 | Fallback when the model is unavailable | rule-based parser (simulator, Apple Intelligence off) |
-| Voice | keyboard dictation; in-app mic button with **SpeechAnalyzer** later |
+| Voice | in-app mic button with **SpeechAnalyzer** (on-device); Siri via App Intents; keyboard dictation |
 | Label scanning | **Vision** text recognition + Foundation Models to sort the text into fields |
 | Charts | Swift Charts |
 | Siri / Shortcuts / widgets | App Intents, WidgetKit |
@@ -55,29 +56,31 @@ UI and the Apple frameworks. Benefits:
 
 ---
 
-## 3. Repository layout
+## 3. Repository layout (new repo)
 
 ```
-coffee/
+coffee-taster-ios/
 ├── README.md                 # what it is, how to build and run on your iPhone
-├── PLAN.md                   # this file
+├── PLAN.md                   # this file (moves here from the web repo)
 ├── LICENSE
 ├── project.yml               # XcodeGen spec
 ├── CoffeeTaster/             # app target (SwiftUI, SwiftData, Apple frameworks)
 │   ├── App/
-│   ├── Features/             # Log, Review, Beans, History, DialIn, Timer, Settings, Sync
+│   ├── Features/             # Log, Review, Beans, History, Timer, DialIn, Settings, Sync
+│   ├── Intents/              # Siri / Shortcuts (App Intents)
 │   ├── AI/                   # Foundation Models extraction
 │   └── Resources/            # assets, app icon (from the old logo)
-├── CoffeeTasterWidgets/      # widget + Live Activity extension (later phase)
+├── CoffeeTasterWidgets/      # Live Activity for the brew timer (+ widgets later)
 ├── CoffeeKit/                # Swift package: pure logic + tests
 │   ├── Package.swift
 │   ├── Sources/CoffeeKit/
 │   └── Tests/CoffeeKitTests/
+├── templates/                # CSV templates for a one-time import of old data
 └── .github/workflows/ci.yml  # Linux: swift test on CoffeeKit; macOS: build + test the app
 ```
 
-Removed from the repo: `coffee.py`, `test_coffee.py`, `requirements.txt`,
-`.streamlit/`, `.devcontainer/` (Python-only). The logo moves into the app's assets.
+The CSV templates are already in the web repo under `templates/` so you can prepare
+your old data now; they move to the new repo in Phase 0.
 
 ---
 
@@ -116,17 +119,22 @@ French Press 1:15, Moka 1:7).
 
 ## 5. Features by phase
 
-### Phase 0 — Clean slate
-- Remove the web app files; update README and `.gitignore` for Xcode.
-- `project.yml`, an app that launches with an empty tab layout, the `CoffeeKit`
-  package with one passing test, and a placeholder app icon from the old logo.
+Priorities, from you: **logging, Siri voice input, the brew timer, and folder sync
+from day one.** Those make up Phases 1 and 2. Tasting depth and extras come after.
+
+### Phase 0 — New repo and skeleton
+- Create the new repo; move `PLAN.md` and `templates/` into it.
+- `project.yml`, an app that launches with an empty tab layout (Log, History, Beans,
+  Settings), the `CoffeeKit` package with one passing test, and a placeholder app
+  icon from the old logo.
 - CI: `swift test` for `CoffeeKit` on Linux, plus `xcodegen` + `xcodebuild build
   test` on a macOS runner. CI is how compile errors are caught before you pull.
 
-### Phase 1 — MVP: log a brew and see it
+### Phase 1 — Log a brew, keep the history synced (MVP)
 1. **Log screen.** One text box ("V60, Ethiopia Guji, 18g, 300g at 94°, grind 22,
-   3:10, sweet and juicy but a bit sour, 4 stars") with dictation, plus a **"Same as
-   last time"** button that copies the previous brew so you only change what's new.
+   3:10, sweet and juicy but a bit sour, 4 stars"), a **mic button** for speaking
+   instead of typing (SpeechAnalyzer, on-device), and a **"Same as last time"**
+   button that copies the previous brew so you only change what's new.
 2. **On-device extraction.** `@Generable` types turn the text into a draft brew:
    numbers with unit handling (3:10 → 190 s, 94° → °C), method, a match against your
    existing beans by name, extraction feel, flavor tags from the fixed list.
@@ -136,23 +144,35 @@ French Press 1:15, Moka 1:7).
    marked so you can check them. Ratio shown live ("1:16.7 · Pour Over target 1:17").
 4. **Beans.** Add a bean manually; choose it on a brew; see days off roast.
 5. **History.** A list of brews, newest first, with search; tap to edit, swipe to delete.
+6. **Folder sync.**
+   - On first launch, the app asks you to pick a sync folder (e.g. iCloud Drive →
+     Coffee). You can skip this and do it later in Settings.
+   - After every save, edit or delete, the app rewrites `coffee-brews.csv` and
+     `coffee-beans.csv` there. iCloud Drive syncs them to your Mac by itself;
+     nothing to export or upload.
+   - **Import:** if the folder already has those files (a new phone, a reinstall, or
+     the template you filled in from the old Google Sheet), the app offers to import
+     them, merging by `id`.
+   - A copy is always in the app's own Documents folder, visible in the Files app
+     under "On My iPhone".
+   - Sync is one-way (phone → file). Free Apple IDs can't use iCloud/CloudKit directly;
+     writing to a folder you picked needs no special permission.
 
-### Phase 2 — History you own: folder sync + import
-- **Pick a sync folder once** (e.g. iCloud Drive → Coffee). After every save, edit or
-  delete, the app rewrites `coffee-brews.csv` and `coffee-beans.csv` there. iCloud
-  Drive syncs them to your Mac by itself; nothing to export or upload.
-- **Import / restore** from those CSVs (merging by `id`), for a new phone or a
-  reinstall.
-- **Import the old Google Sheet** (File → Download → CSV): its columns are mapped
-  automatically, including the old temperature presets
-  (175 Green → 79 °C, 185 White → 85 °C, 190 Oolong → 88 °C, 200 FrenchPress → 93 °C,
-  Boil → 100 °C) and star ratings.
-- A copy of the CSVs is always in the app's own Documents folder, visible in the
-  Files app under "On My iPhone".
-- Sync is one-way (phone → file). Free Apple IDs can't use iCloud/CloudKit directly;
-  writing to a folder you picked needs no special permission.
+### Phase 2 — Siri and the brew timer
+- **"Hey Siri, log a coffee in Coffee Taster."** Siri asks "How was it?", you answer
+  in one sentence, and Siri turns your speech into text. The app extracts the brew,
+  shows a confirmation card inside Siri ("Pour Over · 18 g → 300 g · 4★ — Save?"),
+  and saves it. You never open the app. Missing fields can be filled in later.
+- **"Hey Siri, start a pour-over timer."** Starts the brew timer for that method.
+- **Brew timer.** Recipes per method with steps (e.g. Pour Over: bloom 50 g for 45 s,
+  pour to 180 g, pour to 300 g, drawdown), scaled to your dose and ratio. Haptics at
+  each step. It runs as a **Live Activity** on the Lock Screen and Dynamic Island.
+- **Timer → log.** When the timer stops, the Log screen opens with method, dose,
+  water and time already filled in; you only say or type how it tasted.
+- All of these also appear in the Shortcuts app and as Action button options
+  (iPhone 16), so one press can start the timer.
 
-### Phase 3 — Tasting and dial-in (the core of "best app")
+### Phase 3 — Tasting and dial-in
 - **Dial-in suggestions** after each brew, from well-known extraction rules
   (sour/weak → finer, hotter or longer; bitter/harsh → coarser, cooler or shorter;
   thin → higher dose). Each suggestion is specific to the method and your grinder's
@@ -163,25 +183,15 @@ French Press 1:15, Moka 1:7).
 - **Taste profile:** the five 1–5 scales and flavor tags shown as a small radar
   chart, compared with the roaster's notes from the bag.
 - **Flavor wheel picker** for adding tags by hand.
+- Save your own timer recipes; "brew again" from any past brew.
 
-### Phase 4 — Brew guide and timer
-- Recipes per method with steps (e.g. Pour Over: bloom 50 g for 45 s, pour to 180 g,
-  pour to 300 g, drawdown), scaled to your dose and ratio.
-- A timer that moves through the steps, with haptics at each one. It runs as a
-  **Live Activity** on the Lock Screen and Dynamic Island while you pour.
-- When the timer stops, the Log screen opens with method, dose, water and time
-  already filled in; you only add the taste.
-- Save your own recipes; "brew again" from any past brew.
-
-### Phase 5 — Native extras
+### Phase 4 — Extras
 - **Scan a coffee bag** with the camera: Vision reads the label, the on-device model
   sorts it into roaster, name, origin, process, roast date and tasting notes.
-- **Siri and Shortcuts:** "Log a coffee", "Start a pour-over timer", "What was my best
-  brew of [bean]?".
 - **Home-screen and Lock Screen widgets:** last brew, the current bean's days off
   roast, a quick "Log" button.
-- **Insights:** favorite origins and processes, rating trends, your coffee per week.
-- In-app mic button using SpeechAnalyzer, so logging works hands-free while brewing.
+- **Insights:** favorite origins and processes, rating trends, coffee per week.
+- More Siri questions: "What was my best brew of [bean]?"
 
 ### Later / maybe
 - iCloud/CloudKit sync between devices and an Apple Watch timer (need the paid
@@ -199,7 +209,9 @@ French Press 1:15, Moka 1:7).
 yield_g, temp_c, time_s, rating, extraction, acidity, sweetness, body, bitterness,
 aftertaste, flavors, comment, original_text`
 
-- `date` is ISO 8601 with the time zone (`2026-10-06T08:15:00-07:00`).
+- `date` is ISO 8601 with the time zone (`2026-10-06T08:15:00-07:00`). On import,
+  `2024-09-15 08:30:00` (the old sheet's format, read as local time) also works.
+- On import, only `method` is required. An empty `id` gets a new one.
 - `flavors` is a `;`-separated list inside one cell.
 - Units are always grams and °C in the file, whatever the app's display setting.
 
@@ -213,7 +225,7 @@ roast_date, roaster_notes, finished`.
 - **`CoffeeKit` unit tests** (run on Linux and macOS in CI): ratio math, unit
   conversion, time parsing ("3:10", "190s", "3 min"), dial-in rules for every
   method and taste combination, the fallback parser on a table of sample sentences,
-  CSV write → read round trip, import of a real old Google Sheet export.
+  CSV write → read round trip, importing the filled-in templates.
 - **App tests** on the macOS runner: SwiftData model, view models.
 - **Extraction check on your iPhone:** a debug-only screen that runs a fixed set of
   sample sentences through the on-device model and shows the results side by side
@@ -243,17 +255,17 @@ for example to `com.coffee.<yourname>`, and run `xcodegen` again.
 
 ## 9. Decisions
 
-- iOS app only. The web app is removed and kept only in git history.
+- Separate new repo for the iOS app. The Streamlit app stays deployed and unchanged.
 - No OpenAI or any other cloud AI: Apple's on-device model only.
 - Bundle ID `com.coffee.CoffeeTaster`.
-- Google Sheets is not required. History syncs as CSV files in a folder you choose;
-  the old sheet can be imported once.
+- Folder sync is part of the MVP. No Google Sheets connection.
+- Old data: one-time import from the CSV templates in `templates/`, filled in by hand.
+- Top priorities: logging, Siri voice logging, brew timer.
 - Test device: iPhone 16.
+- Defaults until told otherwise: °C and grams, a generic 1–40 grind scale.
 
 ## 10. Open questions
 
-1. **Your gear:** which grinder(s) and brew methods do you use most? This sets the
-   default grind scale and which recipes come first.
-2. **Units:** °C or °F by default?
-3. **Order:** is this phase order right, or should the brew timer (Phase 4) come
-   before tasting and dial-in (Phase 3)?
+1. **New repo name and owner**, e.g. `aburmist/coffee-taster-ios`.
+2. **Your gear:** which grinder(s) and brew methods do you use most? This sets the
+   default grind scale and which timer recipes come first.
