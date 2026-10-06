@@ -226,14 +226,15 @@ creates one.
 ## 8. Decisions
 
 - Bundle ID: `com.coffee.CoffeeTaster`, set once in `project.yml` so it's easy to change.
+- Test device: iPhone 16, which supports Apple Intelligence, so on-device extraction
+  works there. Turn Apple Intelligence on in Settings before testing.
 - Google Sheets is not required. History lives on the phone and is synced as a CSV
   through a folder you choose (Phase 4).
 
 ## 9. Open questions
 
-1. **Which iPhone** will you test on? This confirms Apple Intelligence support.
-2. **Is the web app deployed** on Streamlit Community Cloud? If so, its main-file path
+1. **Is the web app deployed** on Streamlit Community Cloud? If so, its main-file path
    has to change in Phase 0.
-3. **Phase 3 priorities**: which of Siri, the timer and the bag scan matter most?
-4. **Move folder sync earlier?** If historical tracking matters most, Phase 4 can
+2. **Phase 3 priorities**: which of Siri, the timer and the bag scan matter most?
+3. **Move folder sync earlier?** If historical tracking matters most, Phase 4 can
    ship right after Phase 1, before history and charts.
