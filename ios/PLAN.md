@@ -15,6 +15,8 @@ Status: **draft for review**. Nothing below is built yet.
 - Same core flow as the web app: free text → extracted fields → review form → save.
 - Use Apple's on-device model for extraction. No OpenAI key, no network needed to log a brew.
 - Local-first: the phone keeps the full history even with no connection.
+- Your history is kept automatically as a CSV in a folder you choose (iCloud Drive or
+  similar), so you can open it on a Mac or in a spreadsheet without exporting anything.
 - Run on your own iPhone with a **free Apple ID** (no paid developer account).
 
 **Non-goals (for now)**
@@ -27,7 +29,7 @@ Status: **draft for review**. Nothing below is built yet.
 ## 2. Repository layout
 
 Keep **one repo** with the two apps side by side. They share the data format (the
-Google Sheet columns), so it helps to change them in the same place. They share no code.
+same CSV / sheet columns), so it helps to change them in the same place. They share no code.
 
 ```
 coffee/
@@ -44,8 +46,7 @@ coffee/
 │   ├── README.md          # build & run instructions
 │   ├── project.yml        # XcodeGen spec → generates CoffeeTaster.xcodeproj
 │   ├── CoffeeTaster/      # app sources
-│   ├── CoffeeTasterTests/ # unit tests
-│   └── GoogleAppsScript/  # optional sheet-sync endpoint (Phase 4)
+│   └── CoffeeTasterTests/ # unit tests
 ├── .devcontainer/         # updated to run web/coffee.py
 └── .github/workflows/
     └── ios.yml            # build + test on a macOS runner
@@ -127,29 +128,55 @@ falls back to the rule-based parser (Phase 1) and the manual form.
   A Live Activity / Dynamic Island version can come later.
 - **Coffee bag scan**: the camera plus Vision text recognition reads the roaster and
   bean name from the bag label into optional new fields (`beanName`, `roaster`).
-- **Export**: share the history as CSV through the share sheet. This works with a
-  free account and needs no Google setup.
+- **One-off export**: share the CSV through the share sheet (AirDrop, Mail, …) for
+  the times you want to send it somewhere outside the sync folder.
 
-### Phase 4 — Optional Google Sheets sync
-- A small **Google Apps Script** (`ios/GoogleAppsScript/Code.gs`) that you deploy as a
-  web app on your existing sheet. It accepts a POST and appends one row in the
-  existing column order.
-- The app has a Settings screen where you paste the script URL. Brews are queued and
-  synced when the phone is online, and each brew shows its sync status.
-- No Google credentials are stored on the phone. The script URL acts as the secret,
-  and Apps Script handles the sheet permissions.
+### Phase 4 — Folder sync for history (no upload step)
+The aim is a history file that stays up to date by itself, with no paid account and
+no server.
+
+- **Pick a sync folder once** in Settings, using the system folder picker. Choose a
+  folder in **iCloud Drive** (or any Files provider such as Google Drive, Dropbox or
+  OneDrive). The app keeps a security-scoped bookmark, so it can write there later
+  without asking again.
+- **Automatic CSV**: after every save, edit or delete, the app rewrites
+  `coffee-log.csv` in that folder, using file coordination for safe writes. iCloud
+  Drive then syncs the file to your Mac and iCloud.com by itself. You can open it in
+  Numbers or Excel, or import it into Google Sheets.
+- **Import / restore**: read a `coffee-log.csv` back in, merging rows by `id`. This
+  covers a new phone, deleting and reinstalling the app, and loading your **existing
+  Google Sheet history** (File → Download → CSV).
+- **Status line** in Settings: "Last synced 2 min ago · 143 brews". If the folder
+  becomes unavailable, the app shows a warning; brews are still saved on the phone,
+  and the CSV is caught up on the next save.
+- **Local copy**: the app's Documents folder is visible in the Files app
+  ("On My iPhone → Coffee Taster") and holds the same CSV, so a copy is there even
+  before you pick a folder.
+
+Why not iCloud/CloudKit sync directly: both need the iCloud entitlement, which free
+personal teams can't use. Writing to a folder you picked in iCloud Drive needs no
+entitlement, because the Files app's provider does the syncing.
+
+Note: this is one-way (phone → file). Editing the CSV on the Mac doesn't change the
+app until you import it. Two-way merge can come later if needed.
 
 ### Later / maybe
 - Home-screen widget (last brew, quick "log" button). Sharing data between the app
   and a widget needs App Groups. Check whether a free personal team allows that.
-- iCloud sync between devices: needs the paid account.
+- Full iCloud/CloudKit sync between devices: needs the paid account.
+- Google Sheets live sync (Apps Script endpoint), if the CSV turns out not to be enough.
 - Apple Health caffeine logging.
 
 ---
 
-## 5. Data mapping (sheet compatibility)
+## 5. CSV format
 
-| Sheet column | iOS `Brew` | Notes |
+The CSV uses the web app's Google Sheet columns in the same order, so old sheet
+exports import directly. Two columns are added at the end: `id` (UUID, used to merge
+on import) and `original_text`. When importing old rows that have no `id`, the app
+creates one.
+
+| CSV column | iOS `Brew` | Notes |
 |---|---|---|
 | `coffee_weight` | `coffeeGrams` | Int |
 | `coffee_grind` | `grindSize` | Int 1–40 |
@@ -160,6 +187,8 @@ falls back to the rule-based parser (Phase 1) and the manual form.
 | `rating` | `rating` → `"⭐️" × n` | stored as Int, written as stars |
 | `comment` | `comment` | |
 | `date` | `date` | `yyyy-MM-dd HH:mm:ss`, local time |
+| `id` | `id` | UUID (new) |
+| `original_text` | `originalText` | what you typed (new) |
 
 ---
 
@@ -168,7 +197,7 @@ falls back to the rule-based parser (Phase 1) and the manual form.
 - **Unit tests (Swift Testing)**, run in CI:
   - brew-ratio math for every method
   - the fallback parser against a table of sample sentences (including the README example)
-  - `Brew` → sheet-row mapping
+  - CSV write → read round trip, plus importing a real export of the old Google Sheet
 - **Extraction checks on the device**: a debug-only screen that runs the sample
   sentences through the on-device model and shows the results. The model only runs
   on real hardware, so CI can't run this.
@@ -181,8 +210,10 @@ falls back to the rule-based parser (Phase 1) and the manual form.
 
 1. Xcode → Settings → Accounts → add your Apple ID (this creates a "Personal Team").
 2. `cd ios && xcodegen && open CoffeeTaster.xcodeproj`
-3. Choose your Personal Team under Signing. Set a unique bundle ID, for example
-   `com.<yourname>.CoffeeTaster`.
+3. Choose your Personal Team under Signing. The bundle ID is `com.coffee.CoffeeTaster`.
+   Bundle IDs must be unique across all Apple accounts. If Xcode says the ID is "not
+   available", change `BUNDLE_ID_PREFIX` in `project.yml` (for example to
+   `com.coffee.<yourname>`) and run `xcodegen` again.
 4. Plug in your iPhone and turn on **Developer Mode** (Settings → Privacy & Security).
    Run the app.
 5. On the iPhone, trust the developer certificate the first time: Settings → General →
@@ -192,12 +223,17 @@ falls back to the rule-based parser (Phase 1) and the manual form.
 
 ---
 
-## 8. Open questions
+## 8. Decisions
 
-1. **Bundle ID prefix**: which reverse-domain name should be used (e.g. `com.aburmist`)?
-2. **Google Sheets sync (Phase 4)**: is it still wanted, or is a local history plus CSV
-   export enough?
-3. **Which iPhone** will you test on? This confirms Apple Intelligence support.
-4. **Is the web app deployed** on Streamlit Community Cloud? If so, its main-file path
+- Bundle ID: `com.coffee.CoffeeTaster`, set once in `project.yml` so it's easy to change.
+- Google Sheets is not required. History lives on the phone and is synced as a CSV
+  through a folder you choose (Phase 4).
+
+## 9. Open questions
+
+1. **Which iPhone** will you test on? This confirms Apple Intelligence support.
+2. **Is the web app deployed** on Streamlit Community Cloud? If so, its main-file path
    has to change in Phase 0.
-5. **Phase 3 priorities**: which of Siri, the timer and the bag scan matter most?
+3. **Phase 3 priorities**: which of Siri, the timer and the bag scan matter most?
+4. **Move folder sync earlier?** If historical tracking matters most, Phase 4 can
+   ship right after Phase 1, before history and charts.
