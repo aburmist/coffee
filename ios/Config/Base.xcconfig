@@ -1,0 +1,8 @@
+// Shared build settings. To use your own signing team or bundle ID without
+// editing tracked files, create Config/Local.xcconfig (git-ignored), e.g.:
+//
+//   DEVELOPMENT_TEAM = ABCDE12345
+//   BUNDLE_ID_PREFIX = com.coffee.yourname
+//
+BUNDLE_ID_PREFIX = com.coffee
+#include? "Local.xcconfig"
