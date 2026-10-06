@@ -147,7 +147,7 @@ public enum BrewCSV {
 
             var brew = BrewRecord(
                 id: id,
-                date: s("date").flatMap { DateCodec.read($0, timeZone: timeZone) } ?? Date(timeIntervalSince1970: 0),
+                date: s("date").flatMap { DateCodec.read($0, timeZone: timeZone) } ?? Date(),
                 beanID: s("bean_id").flatMap(UUID.init(uuidString:)),
                 beanName: s("bean_name"),
                 method: method,
@@ -171,7 +171,9 @@ public enum BrewCSV {
                 brew.yieldGrams = w
                 brew.waterGrams = nil
             }
-            if s("date") == nil { warnings.append("Row \(line): no date — imported with date 1 Jan 1970.") }
+            if s("date").flatMap({ DateCodec.read($0, timeZone: timeZone) }) == nil {
+                warnings.append("Row \(line): no readable date — imported with today's date.")
+            }
             records.append(brew)
         }
         return CSVImportResult(records: records, warnings: warnings)
@@ -190,7 +192,7 @@ public enum BrewCSV {
     /// "4", "4.5", or "⭐️⭐️⭐️⭐️".
     static func rating(from text: String) -> Double? {
         if let v = Parse.number(text) { return v }
-        let stars = text.filter { $0 == "⭐" || $0 == "★" }.count
+        let stars = Parse.starCount(text)
         return stars > 0 ? Double(stars) : nil
     }
 

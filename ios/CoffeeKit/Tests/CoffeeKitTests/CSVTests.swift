@@ -79,9 +79,10 @@ struct CSVTests {
     }
 
     @Test func skipsRowsWithoutMethod() {
-        let r = BrewCSV.import("method,dose_g\n,18\ntea,3\nMoka,15\n")
-        #expect(r.records.count == 1)
-        #expect(r.warnings.count == 2)
+        let r = BrewCSV.import("method,dose_g,date\n,18,2024-01-01\ntea,3,2024-01-01\nMoka,15,2024-01-01\nDrip,20,\n")
+        #expect(r.records.count == 2)
+        #expect(r.warnings.count == 3)
+        #expect(r.warnings.last?.contains("today's date") == true)
     }
 
     @Test func temperatureCells() {

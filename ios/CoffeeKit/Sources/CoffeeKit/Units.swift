@@ -71,6 +71,12 @@ public enum Parse {
         return nil
     }
 
+    /// Counts star symbols (⭐️, ⭐, ★). "⭐️" is one Character made of two scalars,
+    /// so this counts scalars rather than Characters.
+    public static func starCount(_ text: String) -> Int {
+        text.unicodeScalars.filter { $0 == "\u{2B50}" || $0 == "\u{2605}" }.count
+    }
+
     /// Parses a decimal number that may use a comma ("18,5").
     public static func number(_ text: String) -> Double? {
         Double(text.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: "."))

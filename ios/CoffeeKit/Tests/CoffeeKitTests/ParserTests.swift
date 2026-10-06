@@ -81,6 +81,8 @@ struct ParserTests {
     @Test func starsAsEmoji() {
         #expect(BrewTextParser.rating(in: "⭐️⭐️⭐️⭐️") == 4)
         #expect(BrewTextParser.rating(in: "4/5") == 4)
+        #expect(BrewTextParser.rating(in: "★★★") == 3)
+        #expect(Parse.starCount("⭐️⭐️") == 2)
     }
 
     @Test func frenchPressWithWaterLabel() {

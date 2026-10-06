@@ -92,7 +92,7 @@ public enum BrewTextParser {
         if let m = t.firstMatch(of: #/(\d(?:[.,]5)?)\s*(?:\/\s*5|stars?|★|out of 5)/#) {
             return Parse.number(String(m.1))
         }
-        let stars = text.filter { $0 == "⭐" || $0 == "★" }.count
+        let stars = Parse.starCount(text)
         if stars > 0 { return Double(min(stars, 5)) }
         return nil
     }
@@ -154,7 +154,7 @@ public enum BrewTextParser {
             .filter { part in
                 let p = part.lowercased()
                 guard !p.isEmpty, !p.contains(where: \.isNumber) else { return false }
-                if p.contains("⭐") || p.contains("★") { return false }
+                if Parse.starCount(p) > 0 { return false }
                 if BrewMethod(lenient: p) != nil, p.split(separator: " ").count <= 2 { return false }
                 if p.wholeMatch(of: #/(?:at |off the )?boil(?:ing|ed)?(?: water)?/#) != nil { return false }
                 return true
