@@ -9,7 +9,11 @@ It is a native SwiftUI app for iPhone, in its **own new repository**. The Stream
 web app stays where it is (this repo, deployed on Streamlit Community Cloud) and is
 not changed.
 
-Status: **draft for review**. Nothing below is built yet.
+Status: **first version built** in [`ios/`](ios/README.md), covering Phases 0–3 and
+the bag scan from Phase 4. It lives in the web repo for now and moves to its own repo
+once that exists. Not built yet: home-screen widgets, insights, and "What was my best
+brew of [bean]?" in Siri. The in-app mic uses `SFSpeechRecognizer` (on device) rather
+than `SpeechAnalyzer`.
 
 ---
 
@@ -257,15 +261,17 @@ for example to `com.coffee.<yourname>`, and run `xcodegen` again.
 
 - Separate new repo for the iOS app. The Streamlit app stays deployed and unchanged.
 - No OpenAI or any other cloud AI: Apple's on-device model only.
-- Bundle ID `com.coffee.CoffeeTaster`.
-- Folder sync is part of the MVP. No Google Sheets connection.
-- Old data: one-time import from the CSV templates in `templates/`, filled in by hand.
+- Bundle ID `com.coffee.CoffeeTaster` (override with `BUNDLE_ID_PREFIX` in `Config/Local.xcconfig`).
+- Folder sync is part of the MVP. No Google Sheets connection; the old sheet's CSV
+  download imports directly.
 - Top priorities: logging, Siri voice logging, brew timer.
+- Gear: Baratza Encore (1–40, one click per step) as the default grinder; espresso as
+  the usual method (around 5–6 clicks); dial-in moves espresso 1 click at a time and
+  filter methods 2.
+- °F by default (stored as °C in the CSV files).
 - Test device: iPhone 16.
-- Defaults until told otherwise: °C and grams, a generic 1–40 grind scale.
 
 ## 10. Open questions
 
-1. **New repo name and owner**, e.g. `aburmist/coffee-taster-ios`.
-2. **Your gear:** which grinder(s) and brew methods do you use most? This sets the
-   default grind scale and which timer recipes come first.
+1. **New repo**: create it (suggested name `coffee-taster-ios`) and give the Claude
+   GitHub App access, then the `ios/` folder moves there with its history.

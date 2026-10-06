@@ -1,5 +1,10 @@
 # CSV templates for importing old brews
 
+> **You may not need these.** The app imports a CSV download of the old Coffee
+> Taster Google Sheet as is: download it (File → Download → Comma-separated values)
+> and use Settings → **Import a CSV file…**. The templates are for adding brews
+> from anywhere else, or for cleaning up the data by hand first.
+
 Coffee Taster for iOS syncs your history as two CSV files. If you fill in these
 templates with your old data and put them in the app's sync folder, the app imports
 them the first time you choose that folder.
